@@ -13,7 +13,7 @@ class TeamController {
         //def teamList = Team.executeQuery("from Team team where :p in team.members", [p: person])
         //def teamList = Team.executeQuery("from Team team where team.members.contains(:p)", [p: person])
         //def teamList = Team.executeQuery("from Team team where team.leader=:p", [p: person])    //可以
-        def teamList = Team.executeQuery("from Team team where team.leader=:p", [p: person])    //可以
+        def teamList = Team.executeQuery("from Team team join Person person where person=3")    //
         [teamList: teamList]
     }
 

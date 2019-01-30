@@ -58,6 +58,7 @@ dependencies {
     testRuntime "org.seleniumhq.selenium:selenium-chrome-driver:2.47.1"
     testRuntime "org.seleniumhq.selenium:selenium-htmlunit-driver:2.47.1"
     testRuntime "net.sourceforge.htmlunit:htmlunit:2.18"
+    runtime "mysql:mysql-connector-java:5.1.35" //原来5.1.29，升级到5.1.35
 }
 
 bootRun {
