@@ -1,11 +1,16 @@
 package testhql00
 
 import grails.validation.ValidationException
+
+import java.sql.PreparedStatement
+import java.sql.ResultSet
+
 import static org.springframework.http.HttpStatus.*
 
 class TeamController {
 
     TeamService teamService
+    def dataSource
 
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
@@ -13,13 +18,27 @@ class TeamController {
         //def teamList = Team.executeQuery("from Team team where :p in team.members", [p: person])
         //def teamList = Team.executeQuery("from Team team where team.members.contains(:p)", [p: person])
         //def teamList = Team.executeQuery("from Team team where team.leader=:p", [p: person])    //可以
-        def teamList = Team.executeQuery("from Team team join Person person where person=3")    //
+
+        def db = new groovy.sql.Sql(dataSource)
+        //def teamList = Team.executeQuery("from Team team join Person person where person=3")    //
+        def teamList = []
+        def sql = "SELECT\n" +
+                "team_person.team_members_id\n" +
+                "FROM\n" +
+                "team_person\n" +
+                "WHERE\n" +
+                "team_person.person_id = " + person.id
+        //PreparedStatement ps = db.prepareStatement(sql);
+        //ResultSet rs = ps.executeQuery();
+        def rs = db.rows(sql)
+        println("${rs}")
+        rs.each { e -> teamList.add(Team.get(e.team_members_id)) }
         [teamList: teamList]
     }
 
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
-        respond teamService.list(params), model:[teamCount: teamService.count()]
+        respond teamService.list(params), model: [teamCount: teamService.count()]
     }
 
     def show(Long id) {
@@ -39,7 +58,7 @@ class TeamController {
         try {
             teamService.save(team)
         } catch (ValidationException e) {
-            respond team.errors, view:'create'
+            respond team.errors, view: 'create'
             return
         }
 
@@ -65,7 +84,7 @@ class TeamController {
         try {
             teamService.save(team)
         } catch (ValidationException e) {
-            respond team.errors, view:'edit'
+            respond team.errors, view: 'edit'
             return
         }
 
@@ -74,7 +93,7 @@ class TeamController {
                 flash.message = message(code: 'default.updated.message', args: [message(code: 'team.label', default: 'Team'), team.id])
                 redirect team
             }
-            '*'{ respond team, [status: OK] }
+            '*' { respond team, [status: OK] }
         }
     }
 
@@ -89,9 +108,9 @@ class TeamController {
         request.withFormat {
             form multipartForm {
                 flash.message = message(code: 'default.deleted.message', args: [message(code: 'team.label', default: 'Team'), id])
-                redirect action:"index", method:"GET"
+                redirect action: "index", method: "GET"
             }
-            '*'{ render status: NO_CONTENT }
+            '*' { render status: NO_CONTENT }
         }
     }
 
@@ -101,7 +120,7 @@ class TeamController {
                 flash.message = message(code: 'default.not.found.message', args: [message(code: 'team.label', default: 'Team'), params.id])
                 redirect action: "index", method: "GET"
             }
-            '*'{ render status: NOT_FOUND }
+            '*' { render status: NOT_FOUND }
         }
     }
 }
